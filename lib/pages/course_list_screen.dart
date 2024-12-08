@@ -4,7 +4,7 @@ import 'package:rafael_flutter/database/course_service.dart';
 import 'package:rafael_flutter/pages/course_detail.dart';
 
 class CourseListScreen extends StatefulWidget {
-  const CourseListScreen({Key? key}) : super(key: key);
+  const CourseListScreen({super.key});
 
   @override
   State<CourseListScreen> createState() => _CourseListScreenState();

@@ -56,7 +56,10 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
       appBar: AppBar(
         title: Text(
           widget.course.title,
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white, fontSize: 20),
+          maxLines: 2,
+          overflow:
+              TextOverflow.ellipsis,
         ),
         backgroundColor: const Color.fromARGB(255, 36, 209, 42),
       ),
@@ -64,7 +67,6 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Progress bar
             Padding(
               padding: const EdgeInsets.only(bottom: 16.0),
               child: Column(

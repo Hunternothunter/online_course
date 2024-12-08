@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:rafael_flutter/auth/login.dart';
 import 'package:rafael_flutter/auth/auth_service.dart';
 import 'package:rafael_flutter/pages/course_list.dart';
-import 'package:rafael_flutter/pages/enroll_course.dart';
 import 'package:rafael_flutter/pages/enrolled_courses.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore
+import 'package:rafael_flutter/pages/finished_courses.dart';
+import 'package:rafael_flutter/pages/profile.dart';
+import 'package:rafael_flutter/pages/quizzes.dart'; // Import the Quizzes page
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -20,67 +23,64 @@ class _HomeState extends State<Home> {
   String? _userEmail;
   String? _profilePicUrl;
   int _currentIndex = 0;
-  final String _userId = "OxG8L5m7Qfur9BXTdF1cOxG8L5m7Qfur9BXTdF1c";
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   void initState() {
     super.initState();
-    _fetchUserInfo();
+    _loadUserInfo();
   }
 
-  // Fetch user profile info directly from Firestore
-  Future<void> _fetchUserInfo() async {
+  Future<void> _loadUserInfo() async {
     try {
-      // Assume _userId is already available, otherwise you'll need to get it from local storage, context, or pass it in
-      // if (_userId != null) {
-      // Fetch user profile info from Firestore using the userId
-      DocumentSnapshot userDoc =
-          await _firestore.collection('users').doc(_userId).get();
-
-      if (userDoc.exists) {
-        setState(() {
-          _userName = '${userDoc['firstname']} ${userDoc['lastname']}';
-          _userEmail = userDoc['email'];
-          _profilePicUrl = userDoc['photoURL']; // If available
-        });
-      } else {
-        log("User profile does not exist");
-        // Set default values or show a placeholder if no profile exists
-        setState(() {
-          _userName = 'Guest';
-          _userEmail = 'No Email';
-          _profilePicUrl = null;
-        });
-      }
-      // } else {
-      // log("User ID is null");
-      // Handle case where _userId is null
-      // }
-    } catch (e) {
-      log("Error fetching user info from Firestore: $e");
+      Map<String, String?> userInfo = await _auth.getCurrentUserProfile();
       setState(() {
-        _userName = 'Guest';
-        _userEmail = 'No Email';
-        _profilePicUrl = null;
+        _userName = userInfo['name'];
+        _userEmail = userInfo['email'];
+        _profilePicUrl = userInfo['profilePicUrl'];
       });
+    } catch (e) {
+      log('Error loading user info: $e');
     }
   }
 
   Future<void> _logout() async {
-    try {
-      await _auth.logout();
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginPage()),
-      );
-    } catch (e) {
-      log("Logout failed: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to log out. Please try again.")),
-      );
-    }
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Log Out'),
+          content: const Text('Are you sure you want to log out?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close the dialog
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(context); // Close the dialog
+                try {
+                  await _auth.logout();
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginPage()),
+                  );
+                } catch (e) {
+                  log("Logout failed: $e");
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Failed to log out. Please try again.")),
+                  );
+                }
+              },
+              child: const Text('Log Out'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -97,19 +97,22 @@ class _HomeState extends State<Home> {
     String appBarTitle = '';
     switch (_currentIndex) {
       case 0:
-        appBarTitle = 'Home';
+        appBarTitle = 'My Courses';
         break;
       case 1:
-        appBarTitle = 'Courses';
+        appBarTitle = 'Available Courses';
         break;
       case 2:
         appBarTitle = 'Finished Courses';
         break;
       case 3:
-        appBarTitle = 'Profile';
+        appBarTitle = 'My Quizzes';
+        break;
+      case 4:
+        appBarTitle = 'Profile Information';
         break;
       default:
-        appBarTitle = 'Home';
+        appBarTitle = 'My Courses';
     }
 
     return AppBar(
@@ -147,7 +150,7 @@ class _HomeState extends State<Home> {
           ),
           ListTile(
             leading: const Icon(Icons.home),
-            title: const Text('Home'),
+            title: const Text('My Courses'),
             onTap: () {
               setState(() {
                 _currentIndex = 0;
@@ -157,7 +160,7 @@ class _HomeState extends State<Home> {
           ),
           ListTile(
             leading: const Icon(Icons.book),
-            title: const Text('Courses'),
+            title: const Text('Available Courses'),
             onTap: () {
               setState(() {
                 _currentIndex = 1;
@@ -176,11 +179,21 @@ class _HomeState extends State<Home> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.person),
-            title: const Text('Profile'),
+            leading: const Icon(Icons.quiz),
+            title: const Text('Quizzes'),
             onTap: () {
               setState(() {
                 _currentIndex = 3;
+              });
+              Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.person),
+            title: const Text('Profile Information'),
+            onTap: () {
+              setState(() {
+                _currentIndex = 4;
               });
               Navigator.pop(context);
             },
@@ -208,7 +221,7 @@ class _HomeState extends State<Home> {
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
-          label: 'Home',
+          label: 'My Courses',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.book),
@@ -217,6 +230,10 @@ class _HomeState extends State<Home> {
         BottomNavigationBarItem(
           icon: Icon(Icons.check_circle),
           label: 'Finished Courses',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.quiz),
+          label: 'Quizzes',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person),
@@ -233,9 +250,11 @@ class _HomeState extends State<Home> {
       case 1:
         return const CourseList();
       case 2:
-        return const EnrolledCourses();
+        return const FinishedCourses();
       case 3:
-        return const EnrolledCourses();
+        return const Quizzes(); // Add the Quizzes page here
+      case 4:
+        return const ProfilePage();
       default:
         return const Center(child: Text('Page not found'));
     }

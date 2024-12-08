@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:crypto/crypto.dart'; // You can use crypto package for hashing passwords
+import 'package:crypto/crypto.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -72,6 +73,9 @@ class AuthService {
 
         var userDoc = userSnapshot.docs.first;
         if (userDoc['password'] == hashedPassword) {
+          // Store the userId in SharedPreferences
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('userId', userDoc.id); // Storing userId
           return {
             'userId': userDoc.id,
             'firstname': userDoc['firstname'],
@@ -96,6 +100,9 @@ class AuthService {
         var userDoc = userSnapshot.docs.first;
 
         if (userDoc['password'] == hashedPassword) {
+          // Store the userId in SharedPreferences
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('userId', userDoc.id);
           return {
             'userId': userDoc.id,
             'firstname': userDoc['firstname'],
@@ -140,6 +147,30 @@ class AuthService {
         'username': 'No Username',
       };
     }
+  }
+
+  Future<Map<String, String?>> getCurrentUserProfile() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString('userId');
+
+    if (userId != null) {
+      // Retrieve user information from Firestore using the userId
+      return await getUserProfileInfo(userId);
+    } else {
+      return {
+        'name': 'Guest',
+        'email': 'No Email',
+        'username': 'No Username',
+      };
+    }
+  }
+
+  void displayUserInfo() async {
+    Map<String, String?> userInfo = await getCurrentUserProfile();
+
+    log('Name: ${userInfo['name']}');
+    log('Email: ${userInfo['email']}');
+    log('Username: ${userInfo['username']}');
   }
 
   // Logout user

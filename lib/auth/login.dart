@@ -1,8 +1,8 @@
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:rafael_flutter/auth/auth_service.dart'; // Correct import path
 import 'package:rafael_flutter/auth/sign_up.dart';
 import 'package:rafael_flutter/pages/home.dart';
+import 'package:email_validator/email_validator.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -28,7 +28,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF134B70),
+      backgroundColor: Colors.white, // Set background color to white
       body: Center(
         child: Container(
           width: 550,
@@ -70,25 +70,32 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 20),
               _buildPasswordTextField(),
               const SizedBox(height: 30),
-              ElevatedButton(
-                onPressed: _isLoading ? null : _login,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+              SizedBox(
+                height: 55,
+                child: ElevatedButton(
+                  onPressed: _isLoading ||
+                          _emailController.text.trim().isEmpty ||
+                          _passwordController.text.trim().isEmpty
+                      ? null
+                      : _login,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                ),
-                child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text(
-                        'Login',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
+                  child: _isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                          'Login',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                          ),
                         ),
-                      ),
+                ),
               ),
               const SizedBox(height: 20),
               Row(
@@ -135,6 +142,7 @@ class _LoginPageState extends State<LoginPage> {
       obscureText: isPassword,
       keyboardType:
           isPassword ? TextInputType.text : TextInputType.emailAddress,
+      onChanged: (_) => setState(() {}),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
@@ -153,6 +161,7 @@ class _LoginPageState extends State<LoginPage> {
     return TextField(
       controller: _passwordController,
       obscureText: !_isPasswordVisible,
+      onChanged: (_) => setState(() {}),
       decoration: InputDecoration(
         labelText: 'Password',
         hintText: 'Enter your password',
@@ -182,12 +191,34 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       _isLoading = true;
     });
+
+    // Check if email and password are provided
+    if (_emailController.text.trim().isEmpty ||
+        _passwordController.text.trim().isEmpty) {
+      setState(() {
+        _isLoading = false;
+      });
+      _showError('Please enter both email and password.');
+      return;
+    }
+
+    // // Validate email format only if email is not empty
+    // String emailText = _emailController.text.trim();
+    // if (emailText.isNotEmpty && !EmailValidator.validate(emailText)) {
+    //   setState(() {
+    //     _isLoading = false;
+    //   });
+    //   _showError('Please enter a valid email address.');
+    //   return;
+    // }
+
     try {
       final response = await _auth.loginUserWithEmailOrUsername(
         _emailController.text.trim(),
         _passwordController.text.trim(),
       );
       if (response != null) {
+        _auth.displayUserInfo();
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(

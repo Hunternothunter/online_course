@@ -23,12 +23,14 @@ class Course {
   final String id;
   final String title;
   final String description;
+  final String instructor;
   final List<Module> modules;
 
   Course({
     required this.id,
     required this.title,
     required this.description,
+    required this.instructor,
     required this.modules,
   });
 
@@ -37,6 +39,7 @@ class Course {
       id: id,
       title: data['title'] ?? '',
       description: data['description'] ?? '',
+      instructor: data['instructor'] ?? '',
       modules: (data['modules'] as List<dynamic>?)
               ?.map((module) => Module.fromMap(module as Map<String, dynamic>))
               .toList() ??

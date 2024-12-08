@@ -27,6 +27,7 @@ class CourseService {
           id: doc.id,
           title: data['title'],
           description: data['description'],
+          instructor: data['instructor'],
           modules: modules,
         ));
       }
@@ -94,6 +95,7 @@ class CourseService {
         title: "Introduction to Java Programming",
         description:
             "Learn the basics of Java programming, including variables, loops, and control structures.",
+        instructor: "Jonhny Sins",
         modules: [
           Module(
             title: "Module 1: Introduction to Java",
@@ -155,6 +157,7 @@ class CourseService {
         title: "Object-Oriented Programming in Java",
         description:
             "Dive deep into OOP concepts like classes, objects, inheritance, polymorphism, and encapsulation.",
+        instructor: "Jonhny Sins",
         modules: [
           Module(
             title: "Module 1: OOP Basics",
@@ -218,6 +221,7 @@ class CourseService {
         await _firestore.collection('courses').doc(course.id).set({
           'title': course.title,
           'description': course.description,
+          'instructor': course.instructor,
           'modules': course.modules.map((module) {
             return {
               'title': module.title,

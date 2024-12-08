@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "373588985186",
+    "firebase_url": "https://java-course-931bd-default-rtdb.firebaseio.com",
+    "project_id": "java-course-931bd",
+    "storage_bucket": "java-course-931bd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:373588985186:android:1d0fd235d7ebe9699d583b",
+        "android_client_info": {
+          "package_name": "com.example.java_learning_platform"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDxeP2OLBDkOstjBsDnhRFStZiT4hwhDIU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:373588985186:android:65c2a0e345d30f029d583b",
+        "android_client_info": {
+          "package_name": "com.example.rafael_flutter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDxeP2OLBDkOstjBsDnhRFStZiT4hwhDIU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
